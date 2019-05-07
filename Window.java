@@ -12,9 +12,9 @@ public class Window extends JFrame {
 
     public Window(){
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        gallery = new Gallery();
+        gallery = new Gallery(720, 480, GalleryMode.HORIZONTAL);
 
-        for(int i = 1; i < 7; i++){
+        for(int i = 1; i < 15; i++){
             try {
                 BufferedImage image = ImageIO.read(new File("./images/image" + i + ".png"));
                 gallery.addImages(new Image(image));
