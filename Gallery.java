@@ -1,7 +1,9 @@
 package Gallery;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -111,10 +113,46 @@ public class Gallery extends JPanel {
                 constraints.gridy = counter/countRows;
                 constraints.gridx = counter%countRows;
                 galleryPanel.add(images.get(i), constraints);
+            } else {
+                JButton addImage = new JButton("+");
+                addImage.addActionListener(e -> {
+                    final JFileChooser fc = new JFileChooser();
+
+                    int returnVal = fc.showSaveDialog(this);
+                    if(returnVal == JFileChooser.APPROVE_OPTION){
+                        File file = fc.getSelectedFile();
+                        String extension = getFileExtension(file.getName());
+                        extension = extension.toLowerCase();
+                        if(extension.equals("png") || extension.equals("jpg") || extension.equals("jpeg")){
+                            try {
+                                addImages(new Image(ImageIO.read(file)));
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }
+                    update();
+                });
+                constraints.gridy = counter/countRows;
+                constraints.gridx = counter%countRows;
+                addImage.setPreferredSize(new Dimension(100, 100));
+                addImage.setMinimumSize(new Dimension(100, 100));
+                addImage.setMaximumSize(new Dimension(100, 100));
+                galleryPanel.add(addImage, constraints);
+                break;
             }
             counter ++;
         }
         repaint();revalidate();
         page.setText("Page " + (Math.max(point, 1)/(countLines*countRows)+1) + " from " + (Math.max(images.size(), 1)/(countLines*countRows)+1));
+    }
+
+    public String getFileExtension(String fullName) {
+        if(fullName != null){
+            String fileName = new File(fullName).getName();
+            int dotIndex = fileName.lastIndexOf('.');
+            return (dotIndex == -1) ? "" : fileName.substring(dotIndex + 1);
+        }
+        return "NULL";
     }
 }
