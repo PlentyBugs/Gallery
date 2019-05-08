@@ -5,7 +5,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Gallery extends JPanel {
     private ArrayList<Image> images = new ArrayList<>();
@@ -26,6 +25,11 @@ public class Gallery extends JPanel {
     public Gallery(int width, int height, GalleryMode mode){
         this.height = height;
         this.width = width;
+
+        setPreferredSize(new Dimension(width, height));
+        setMinimumSize(new Dimension(width, height));
+        setMaximumSize(new Dimension(width, height));
+
         countLines = 2;
         countRows = 5;
         point = 0;
@@ -94,6 +98,7 @@ public class Gallery extends JPanel {
         }
 
         add(galleryPanel, BorderLayout.CENTER);
+        update();
     }
 
     public void addImages(Image ... image){
@@ -108,41 +113,43 @@ public class Gallery extends JPanel {
     private void update(){
         galleryPanel.removeAll();
         int counter = 0;
-        for(int i = point; i < countLines*countRows + point; i++){
+
+        JButton addImage = new JButton("+");
+        addImage.addActionListener(e -> {
+            final JFileChooser fc = new JFileChooser();
+
+            int returnVal = fc.showSaveDialog(this);
+            if(returnVal == JFileChooser.APPROVE_OPTION){
+                File file = fc.getSelectedFile();
+                String extension = getFileExtension(file.getName());
+                extension = extension.toLowerCase();
+                if(extension.equals("png") || extension.equals("jpg") || extension.equals("jpeg") || extension.equals("bmp") || extension.equals("tiff") || extension.equals("ico")){
+                    try {
+                        addImages(new Image(ImageIO.read(file)));
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+            update();
+        });
+        constraints.gridy = counter/countRows;
+        constraints.gridx = counter%countRows;
+        addImage.setPreferredSize(new Dimension(100, 100));
+        addImage.setMinimumSize(new Dimension(100, 100));
+        addImage.setMaximumSize(new Dimension(100, 100));
+        galleryPanel.add(addImage, constraints);
+
+        counter ++;
+        for(int i = point; i < countLines*countRows + point - 1; i++){
             if(i < images.size()){
                 constraints.gridy = counter/countRows;
                 constraints.gridx = counter%countRows;
                 galleryPanel.add(images.get(i), constraints);
-            } else {
-                JButton addImage = new JButton("+");
-                addImage.addActionListener(e -> {
-                    final JFileChooser fc = new JFileChooser();
-
-                    int returnVal = fc.showSaveDialog(this);
-                    if(returnVal == JFileChooser.APPROVE_OPTION){
-                        File file = fc.getSelectedFile();
-                        String extension = getFileExtension(file.getName());
-                        extension = extension.toLowerCase();
-                        if(extension.equals("png") || extension.equals("jpg") || extension.equals("jpeg")){
-                            try {
-                                addImages(new Image(ImageIO.read(file)));
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                    }
-                    update();
-                });
-                constraints.gridy = counter/countRows;
-                constraints.gridx = counter%countRows;
-                addImage.setPreferredSize(new Dimension(100, 100));
-                addImage.setMinimumSize(new Dimension(100, 100));
-                addImage.setMaximumSize(new Dimension(100, 100));
-                galleryPanel.add(addImage, constraints);
-                break;
             }
             counter ++;
         }
+
         repaint();revalidate();
         page.setText("Page " + (Math.max(point, 1)/(countLines*countRows)+1) + " from " + (Math.max(images.size(), 1)/(countLines*countRows)+1));
     }
